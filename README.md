@@ -73,6 +73,16 @@ Run Terraform destory
 
 # TODO
 
+When you run `terraform destroy`, it gets stuck deleting the VPC that was
+created:
+```
+Error: Error deleting VPC: DependencyViolation: The vpc 'vpc-[redacted]' has dependencies and cannot be deleted.
+        status code: 400, request id: [some-id]
+```
+You can still destroy that VPC by hand in the AWS console, so it's not clear
+what's up here... It seems like the Terraform module is unaware that it can delete
+the Security Groups, which are preventing the VPC from being deleted.
+
 Remove [the reference to Bret's Docker image for Terraform](./docker-compose.yaml#L16) when it's safe to do so
  - See [the upstream PR about this](https://github.com/abdennour/dockerfiles/pull/4)
 
