@@ -55,7 +55,7 @@ Create an IAM user that you want to be used by Terraform:
 Authenticate with AWS:
 1. Run `./run-docker-compose.sh aws configure --profile terraform-operator`.
 1. Supply the `Access key ID` and `Secret access key` from above.
-1. Supply your desired region (and edit `locals.tf` if it's not `us-west-2`).
+1. Supply your desired region (and edit `locals.tf` if it's not `us-east-1`).
 1. Leave the output format as-is.
 
 Run Terraform apply:
@@ -71,4 +71,30 @@ Run Terraform destory
 ```
 
 
+# TODO
+
+When you run `terraform destroy`, it gets stuck deleting the VPC that was
+created:
+```
+Error: Error deleting VPC: DependencyViolation: The vpc 'vpc-[redacted]' has dependencies and cannot be deleted.
+        status code: 400, request id: [some-id]
+```
+You can still destroy that VPC by hand in the AWS console, so it's not clear
+what's up here... It seems like the Terraform module is unaware that it can delete
+the Security Groups, which are preventing the VPC from being deleted.
+
+Remove [the reference to Bret's Docker image for Terraform](./docker-compose.yaml#L16) when it's safe to do so
+ - See [the upstream PR about this](https://github.com/abdennour/dockerfiles/pull/4)
+
+Missing documentation (that would cover the course material): 
+- How to set up the auditor user/role with kubectl and config map
+
+Potential enhancements:
+- Use the Terraform kubernetes provider to apply the config map change rather than do it by hand
+- Add Route53 and ExternalDNS Helm chart
+- Add the AWS node termination handler:
+  https://github.com/aws/aws-node-termination-handler
+- Add kubeapps: https://kubeapps.com/
+- Add cost information: https://github.com/antonbabenko/terraform-cost-estimation
+- Move to spot instances: https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/spot-instances.md
 

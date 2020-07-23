@@ -7,16 +7,14 @@ resource "aws_acm_certificate" "cert" {
 #   ]
   validation_method         = "DNS"
 }
-
-data "aws_route53_zone" "zone" {
-  name         = local.base_domain
-  private_zone = false
+resource "aws_route53_zone" "zone" {
+  name = local.base_domain
 }
 
 resource "aws_route53_record" "cert_validation" {
   name    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
   type    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
-  zone_id = data.aws_route53_zone.zone.zone_id
+  zone_id = aws_route53_zone.zone.zone_id
   records = [aws_acm_certificate.cert.domain_validation_options.0.resource_record_value]
   ttl     = 60
 }
@@ -35,7 +33,8 @@ resource "helm_release" "ingress" {
   atomic = "true"
 
   values    = [
-    templatefile("./charts/nginx-ingress/values.yaml", { certificate_arn = aws_acm_certificate.cert.arn})
+    file("./charts/nginx-ingress/values.yaml"),
+    templatefile("./charts/nginx-ingress/values.${local.env}.yaml", { certificate_arn = aws_acm_certificate.cert.arn}),
   ]
   
   provisioner "local-exec" {
